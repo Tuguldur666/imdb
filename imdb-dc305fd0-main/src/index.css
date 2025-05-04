@@ -1,0 +1,73 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 342 82% 5%;
+    --foreground: 210 40% 98%;
+
+    --card: 342 70% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 342 70% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 339 100% 78%; /* Pink - #FF90BB */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 266 97% 90%; /* Light Purple - #C68EFD */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 342 40% 15%;
+    --muted-foreground: 215 20.2% 75.1%;
+
+    --accent: 285 80% 80%; /* Light Purple - #E9A5F1 */
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 342 40% 20%;
+    --input: 342 40% 20%;
+    --ring: 339 100% 78%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 342 82% 15%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 339 100% 78%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 266 97% 90%;
+    --sidebar-accent-foreground: 342 82% 15%;
+    --sidebar-border: 342 40% 20%;
+    --sidebar-ring: 339 100% 78%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .movie-card {
+    @apply relative overflow-hidden rounded-lg transition-transform duration-300 transform hover:scale-105 hover:shadow-lg;
+  }
+  
+  .category-badge {
+    @apply inline-block px-2.5 py-0.5 text-xs font-medium rounded-full;
+  }
+  
+  .rating-circle {
+    @apply flex items-center justify-center rounded-full w-10 h-10 text-sm font-bold;
+  }
+}
