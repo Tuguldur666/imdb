@@ -195,7 +195,7 @@ const MovieDetail = () => {
             <div key={actor.actor_id} className="text-center">
               <div className="aspect-square rounded-full overflow-hidden mb-3 mx-auto">
                 <img
-                  src={`/${actor.image}`}
+                  src={`https://biydaaltbackends.vercel.app/${actor.image}`}
                   alt={`${actor.fname} ${actor.lname}`}
                   className="w-full h-full object-cover"
                 />
