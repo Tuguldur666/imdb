@@ -1,19 +1,28 @@
-import axios from 'axios';
+import axios from "axios";
 
-const BASE_URL = 'https://biydaaltbackends.vercel.app/apiimdb/';
+const BASE_URL = "https://biydaaltbackends.vercel.app/apiimdb/";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-export const postJson = async (action: string, data: any = {}) => {
+interface ApiResponse<T> {
+  action: string;
+  resultCode: number;
+  resultMessage: string;
+  curdate: string;
+  size: number;
+  data: T;
+}
+
+export const postJson = async <T = any>(action: string, data: Record<string, any> = {}): Promise<ApiResponse<T>> => {
   try {
     console.log(`[API DEBUG] Posting JSON: action="${action}" with data=`, data);
 
-    const response = await axiosInstance.post('', {
+    const response = await axiosInstance.post<ApiResponse<T>>("", {
       action,
       ...data,
     });
@@ -26,14 +35,14 @@ export const postJson = async (action: string, data: any = {}) => {
   }
 };
 
-export const postFormData = async (action: string, formData: FormData) => {
+export const postFormData = async <T = any>(action: string, formData: FormData): Promise<ApiResponse<T>> => {
   try {
-    formData.append('action', action);
+    formData.append("action", action);
     console.log(`[API DEBUG] Posting FormData: action="${action}"`);
 
-    const response = await axios.post(BASE_URL, formData, {
+    const response = await axios.post<ApiResponse<T>>(BASE_URL, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
 
@@ -45,21 +54,10 @@ export const postFormData = async (action: string, formData: FormData) => {
   }
 };
 
-// Specific API calls
-export const getAllMovies = () => postJson('get_all_movies');
-
+export const getAllMovies = () => postJson<any[]>("get_all_movies");
+export const getAllCategories = () => postJson<any[]>("get_all_categories");
 export const getMoviesByCategory = (cat_id: string) =>
-  postJson('get_movies_by_cat', { cat_id });
-
-export const getMovieDetail = (movie_id: string) =>
-  postJson('get_movie_detail', { movie_id });
-
-
-// Specific API calls
-if (import.meta.env.DEV) {
-  getAllMovies().then((res) => {
-    console.log('[DEBUG] getAllMovies() direct call result:', res);
-  }).catch((err) => {
-    console.error('[DEBUG] getAllMovies() error:', err);
-  });
-}
+  postJson<any[]>("get_movies_by_cat", { cat_id });
+export const getMovieDetail = (movie_id: string | number) =>
+  postJson<any[]>("get_movie_detail", { movie_id: Number(movie_id) });
+export const searchMovie = (movie_name: string) => postJson<any[]>("search_movie", { movie_name });

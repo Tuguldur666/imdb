@@ -1,42 +1,83 @@
-
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Layout from "@/components/layout/Layout";
 import MovieCard from "@/components/movies/MovieCard";
 import FeaturedMovieCard from "@/components/movies/FeaturedMovieCard";
 import { Button } from "@/components/ui/button";
-import { getAllMoviesWithDetails, getMovieWithDetails, categories } from "@/data/mockData";
-import { MovieWithDetails } from "@/types/database";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
+import {
+  getAllMovies,
+  getAllCategories,
+  getMovieDetail,
+} from "@/api/api";
+
+interface Category {
+  cat_id: string;
+  cat_name: string;
+  cat_color: string;
+  cat_code: string;
+}
+
+interface Movie {
+  movie_id: string;
+  title: string;
+  summary?: string;
+  poster?: string;
+  trailer?: string;
+  genres?: any[];
+  actors?: any[];
+  categories?: Category[];
+  rate?: number;
+  age_rate?: string;
+  release_date?: string;
+  [key: string]: any;
+}
+
 const Index = () => {
-  const [featuredMovie, setFeaturedMovie] = useState<MovieWithDetails | null>(null);
-  const [movies, setMovies] = useState<MovieWithDetails[]>([]);
+  const [featuredMovie, setFeaturedMovie] = useState<Movie | null>(null);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
-    // Simulating API calls with setTimeout
-    const fetchData = async () => {
+    const fetchAll = async () => {
       try {
-        // Get a random featured movie (movie id between 1-6)
-        const randomMovieId = Math.floor(Math.random() * 6) + 1;
-        const featured = getMovieWithDetails(randomMovieId);
-        const allMovies = getAllMoviesWithDetails();
-        
-        setTimeout(() => {
-          if (featured) setFeaturedMovie(featured);
-          setMovies(allMovies);
-          setLoading(false);
-        }, 500);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+        const [movieRes, categoryRes] = await Promise.all([
+          getAllMovies(),
+          getAllCategories(),
+        ]);
+
+        const allMovies = movieRes.data || [];
+        const allCategories = categoryRes.data || [];
+
+        setCategories(allCategories);
+
+        const detailedMovies = await Promise.all(
+          allMovies.map(async (movie: any) => {
+            const res = await getMovieDetail(String(movie.movie_id));
+            return res.data?.[0];
+          })
+        );
+
+        const validMovies = detailedMovies.filter(Boolean) as Movie[];
+        setMovies(validMovies);
+
+        if (validMovies.length > 0) {
+          const randomMovie =
+            validMovies[Math.floor(Math.random() * validMovies.length)];
+          setFeaturedMovie(randomMovie);
+        }
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+      } finally {
         setLoading(false);
       }
     };
-    
-    fetchData();
+
+    fetchAll();
   }, []);
-  
+
   return (
     <Layout>
       {loading ? (
@@ -49,7 +90,7 @@ const Index = () => {
         <>
           {/* Hero Section */}
           {featuredMovie && <FeaturedMovieCard movie={featuredMovie} />}
-          
+
           {/* Popular Movies */}
           <section className="container mx-auto px-4 py-12">
             <div className="flex items-center justify-between mb-6">
@@ -62,28 +103,36 @@ const Index = () => {
                 </Button>
               </Link>
             </div>
-            
+
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
               {movies.slice(0, 6).map((movie) => (
-                <MovieCard key={movie.movie_id} movie={movie} />
+                <MovieCard
+                  key={movie.movie_id}
+                  movie_id={movie.movie_id}
+                  title={movie.title}
+                  poster={movie.poster}
+                  rate={movie.rate || 0}
+                  age_rate={movie.age_rate || "N/A"}
+                  release_date={movie.release_date || ""}
+                  categories={movie.categories || []}
+                />
               ))}
             </div>
           </section>
-          
-          {/* Categories Section */}
+
+          {/* Categories */}
           <section className="container mx-auto px-4 py-12">
             <h2 className="font-heading text-2xl md:text-3xl font-bold text-white mb-6">
               Browse by Category
             </h2>
-            
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {categories.map((category) => (
-                <Link 
-                  key={category.cat_code}
-                  to={`/category/${category.cat_code}`}
+                <Link
+                  key={category.cat_id}
+                  to={`/category/${category.cat_id}`}
                   className="group relative h-32 rounded-lg overflow-hidden"
                 >
-                  <div 
+                  <div
                     className="absolute inset-0 opacity-70 transition-opacity group-hover:opacity-90"
                     style={{ backgroundColor: category.cat_color }}
                   ></div>
