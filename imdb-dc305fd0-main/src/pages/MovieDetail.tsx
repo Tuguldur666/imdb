@@ -79,7 +79,7 @@ const MovieDetail = () => {
             <div className="md:w-1/3 lg:w-1/4">
               <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-2xl">
                 <img
-                  src={`/${movie.poster}`}
+                  src={`https://biydaaltbackends.vercel.app/${movie.poster}`}
                   alt={movie.title}
                   className="w-full h-full object-cover"
                 />

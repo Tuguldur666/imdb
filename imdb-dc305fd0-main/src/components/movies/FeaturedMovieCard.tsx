@@ -37,7 +37,7 @@ const FeaturedMovieCard = ({ movie }: FeaturedMovieCardProps) => {
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
-          src={movie.poster}
+          src={`https://biydaaltbackends.vercel.app/${movie.poster}`}
           alt={movie.title}
           className="w-full h-full object-cover"
         />
