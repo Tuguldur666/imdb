@@ -110,7 +110,11 @@ const Index = () => {
                   key={movie.movie_id}
                   movie_id={movie.movie_id}
                   title={movie.title}
-                  poster={movie.poster}
+                  poster={
+                    movie.poster?.startsWith("http")
+                      ? movie.poster
+                      : `https://biydaaltbackends.vercel.app/${movie.poster}`
+                  }
                   rate={movie.rate || 0}
                   age_rate={movie.age_rate || "N/A"}
                   release_date={movie.release_date || ""}
