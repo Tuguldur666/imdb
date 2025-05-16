@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://biydaaltbackends.vercel.app/apiimdb/";
+const BASE_URL = "http://127.0.0.1:8000/apiimdb/";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -61,3 +61,9 @@ export const getMoviesByCategory = (cat_id: string) =>
 export const getMovieDetail = (movie_id: string | number) =>
   postJson<any[]>("get_movie_detail", { movie_id: Number(movie_id) });
 export const searchMovie = (movie_name: string) => postJson<any[]>("search_movie", { movie_name });
+export const addToWishlist = (movie_id: number | string) =>
+  postJson<any>("add_wishlist", { movie_id });
+
+export const removeFromWishlist = (movie_id: number | string) =>
+  postJson<any>("remove_wishlist", { movie_id });
+export const getAllWishlistedMovies = () => postJson<any[]>("get_all_wishlist");

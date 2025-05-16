@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Star, Heart } from "lucide-react";
+import { addToWishlist, removeFromWishlist } from "@/api/api";
 
 interface Category {
   cat_id: string;
@@ -17,6 +18,9 @@ interface MovieCardProps {
   age_rate: string;
   release_date: string;
   categories: Category[];
+  wishlisted: boolean;
+  onToggleWishlist?: (movie_id: string | number, newWishlisted: boolean) => void;
+  hideWishlistToggle?: boolean; // NEW PROP
 }
 
 const MovieCard = ({
@@ -27,33 +31,30 @@ const MovieCard = ({
   age_rate,
   release_date,
   categories,
+  wishlisted: wishlistedProp,
+  onToggleWishlist,
+  hideWishlistToggle = false, // default false
 }: MovieCardProps) => {
-  const [wishlisted, setWishlisted] = useState(false);
+  const [wishlisted, setWishlisted] = useState(wishlistedProp);
 
   const toggleWishlist = async (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent Link navigation on click
-    const action = wishlisted ? "remove" : "add";
-
+    e.preventDefault();
     try {
-      const res = await fetch(`/api/dt_${action}_wishlist`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action: `${action}_wishlist`,
-          movie_id,
-        }),
-      });
-
-      const data = await res.json();
-      if (data?.status === 200) {
-        setWishlisted(!wishlisted);
+      if (wishlisted) {
+        const res = await removeFromWishlist(movie_id);
+        if (res.resultCode === 200) {
+          setWishlisted(false);
+          onToggleWishlist?.(movie_id, false);
+        }
       } else {
-        console.error("Wishlist API error:", data.message);
+        const res = await addToWishlist(movie_id);
+        if (res.resultCode === 200) {
+          setWishlisted(true);
+          onToggleWishlist?.(movie_id, true);
+        }
       }
-    } catch (error) {
-      console.error("Wishlist error:", error);
+    } catch (err) {
+      console.error("Wishlist toggle failed:", err);
     }
   };
 
@@ -67,13 +68,19 @@ const MovieCard = ({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-        {/* Wishlist Heart Icon */}
-        <button
-          onClick={toggleWishlist}
-          className="absolute bottom-3 right-3 z-10 bg-white/80 hover:bg-white text-red-500 rounded-full p-1 transition-colors"
-        >
-          <Heart fill={wishlisted ? "#e11d48" : "none"} className="w-5 h-5" />
-        </button>
+        {/* Heart Icon - only show if NOT hiding */}
+        {!hideWishlistToggle && onToggleWishlist && (
+          <button
+            onClick={toggleWishlist}
+            className="absolute bottom-3 right-3 z-10 bg-white/80 hover:bg-white text-red-500 rounded-full p-1 transition-colors"
+          >
+            <Heart
+              className="w-5 h-5"
+              fill={wishlisted ? "#e11d48" : "none"}
+              stroke={wishlisted ? "#e11d48" : "currentColor"}
+            />
+          </button>
+        )}
 
         {/* Rating Badge */}
         <div className="absolute top-2 right-2 px-2 py-1 bg-black/70 text-white text-xs font-semibold rounded-full flex items-center gap-1 border border-pink">
@@ -86,7 +93,7 @@ const MovieCard = ({
           {age_rate}
         </div>
 
-        {/* Movie Info Overlay */}
+        {/* Info Overlay */}
         <div className="absolute bottom-0 w-full p-3 group-hover:translate-y-0 translate-y-1 transition-transform duration-300">
           <h3 className="text-white font-heading font-semibold text-base truncate mb-1">
             {title}

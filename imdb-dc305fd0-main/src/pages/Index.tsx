@@ -10,6 +10,9 @@ import {
   getAllMovies,
   getAllCategories,
   getMovieDetail,
+  getAllWishlistedMovies,
+  addToWishlist,        
+  removeFromWishlist,   
 } from "@/api/api";
 
 interface Category {
@@ -31,52 +34,114 @@ interface Movie {
   rate?: number;
   age_rate?: string;
   release_date?: string;
+  wishlisted?: boolean;
   [key: string]: any;
 }
 
 const Index = () => {
+  const [wishlistMovies, setWishlistMovies] = useState<Movie[]>([]);
   const [featuredMovie, setFeaturedMovie] = useState<Movie | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [movieRes, categoryRes] = await Promise.all([
-          getAllMovies(),
-          getAllCategories(),
-        ]);
+  // Fetch all initial data and set states
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      const [movieRes, categoryRes, wishlistRes] = await Promise.all([
+        getAllMovies(),
+        getAllCategories(),
+        getAllWishlistedMovies(),
+      ]);
 
-        const allMovies = movieRes.data || [];
-        const allCategories = categoryRes.data || [];
+      const allMovies = movieRes.data || [];
+      const allCategories = categoryRes.data || [];
+      const wishlist = wishlistRes.data || [];
 
-        setCategories(allCategories);
+      setCategories(allCategories);
+      setWishlistMovies(wishlist);
 
-        const detailedMovies = await Promise.all(
-          allMovies.map(async (movie: any) => {
-            const res = await getMovieDetail(String(movie.movie_id));
-            return res.data?.[0];
-          })
-        );
+      const detailedMovies = await Promise.all(
+        allMovies.map(async (movie: any) => {
+          const res = await getMovieDetail(String(movie.movie_id));
+          const detail = res.data?.[0];
+          const isWishlisted = wishlist.some((w) => w.movie_id === movie.movie_id);
+          return detail
+            ? { ...movie, ...detail, wishlisted: isWishlisted }
+            : { ...movie, wishlisted: isWishlisted };
+        })
+      );
 
-        const validMovies = detailedMovies.filter(Boolean) as Movie[];
-        setMovies(validMovies);
+      const validMovies = detailedMovies.filter(Boolean) as Movie[];
+      setMovies(validMovies);
 
-        if (validMovies.length > 0) {
-          const randomMovie =
-            validMovies[Math.floor(Math.random() * validMovies.length)];
-          setFeaturedMovie(randomMovie);
-        }
-      } catch (err) {
-        console.error("Failed to fetch data:", err);
-      } finally {
-        setLoading(false);
+      if (validMovies.length > 0) {
+        const randomMovie =
+          validMovies[Math.floor(Math.random() * validMovies.length)];
+        setFeaturedMovie(randomMovie);
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchAll();
+  useEffect(() => {
+    fetchAllData();
   }, []);
+
+  const toggleWishlist = async (movieId: string) => {
+    // Optimistically update UI first
+    setMovies((prevMovies) =>
+      prevMovies.map((movie) =>
+        movie.movie_id === movieId ? { ...movie, wishlisted: !movie.wishlisted } : movie
+      )
+    );
+
+    setWishlistMovies((prevWishlist) => {
+      // If movie already in wishlist, remove it
+      if (prevWishlist.some((m) => m.movie_id === movieId)) {
+        return prevWishlist.filter((m) => m.movie_id !== movieId);
+      }
+      // Otherwise, add the movie (find from movies)
+      const movieToAdd = movies.find((m) => m.movie_id === movieId);
+      if (movieToAdd) {
+        return [...prevWishlist, { ...movieToAdd, wishlisted: true }];
+      }
+      return prevWishlist;
+    });
+
+    // Then sync with backend
+    try {
+      const isCurrentlyWishlisted = movies.find((m) => m.movie_id === movieId)?.wishlisted;
+
+      if (isCurrentlyWishlisted) {
+        // Movie was wishlisted, so remove it from backend wishlist
+        await removeFromWishlist(movieId);
+      } else {
+        // Movie was not wishlisted, so add it
+        await addToWishlist(movieId);
+      }
+      // After successful backend update, fetch fresh wishlist to sync state perfectly
+      const wishlistRes = await getAllWishlistedMovies();
+      const freshWishlist = wishlistRes.data || [];
+      setWishlistMovies(freshWishlist);
+
+      // Also update movies wishlisted flag based on fresh wishlist
+      setMovies((prevMovies) =>
+        prevMovies.map((movie) => ({
+          ...movie,
+          wishlisted: freshWishlist.some((w) => w.movie_id === movie.movie_id),
+        }))
+      );
+    } catch (error) {
+      console.error("Failed to update wishlist on server:", error);
+      // Optionally revert UI changes or show error
+      fetchAllData(); // fallback: reload all data on error
+    }
+  };
 
   return (
     <Layout>
@@ -88,10 +153,8 @@ const Index = () => {
         </div>
       ) : (
         <>
-          {/* Hero Section */}
           {featuredMovie && <FeaturedMovieCard movie={featuredMovie} />}
 
-          {/* Popular Movies */}
           <section className="container mx-auto px-4 py-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-heading text-2xl md:text-3xl font-bold text-white">
@@ -113,18 +176,19 @@ const Index = () => {
                   poster={
                     movie.poster?.startsWith("http")
                       ? movie.poster
-                      : `https://biydaaltbackends.vercel.app/${movie.poster}`
+                      : `http://127.0.0.1:8000/${movie.poster}`
                   }
                   rate={movie.rate || 0}
                   age_rate={movie.age_rate || "N/A"}
                   release_date={movie.release_date || ""}
                   categories={movie.categories || []}
+                  wishlisted={movie.wishlisted ?? false}
+                  onToggleWishlist={() => toggleWishlist(movie.movie_id)}
                 />
               ))}
             </div>
           </section>
 
-          {/* Categories */}
           <section className="container mx-auto px-4 py-12">
             <h2 className="font-heading text-2xl md:text-3xl font-bold text-white mb-6">
               Browse by Category
@@ -149,6 +213,38 @@ const Index = () => {
               ))}
             </div>
           </section>
+
+          {wishlistMovies.length > 0 && (
+            <section className="container mx-auto px-4 py-12">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-heading text-2xl md:text-3xl font-bold text-white">
+                  My Wishlist
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+             {wishlistMovies.map((movie) => (
+                <MovieCard
+                  key={movie.movie_id}
+                  movie_id={movie.movie_id}
+                  title={movie.title}
+                  poster={
+                    movie.poster?.startsWith("http")
+                      ? movie.poster
+                      : `http://127.0.0.1:8000/${movie.poster}`
+                  }
+                  rate={movie.rate || 0}
+                  age_rate={movie.age_rate || "N/A"}
+                  release_date={movie.release_date || ""}
+                  categories={movie.categories || []}
+                  wishlisted={true}
+                  hideWishlistToggle={true}  
+  />
+))}
+
+
+              </div>
+            </section>
+          )}
         </>
       )}
     </Layout>
