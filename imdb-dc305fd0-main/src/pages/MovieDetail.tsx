@@ -184,7 +184,24 @@ const MovieDetail = () => {
           </div>
         </div>
       )}
-
+ {movie.images?.length > 0 && (
+        <section className="container mx-auto px-4 py-12">
+          <h2 className="font-heading text-2xl md:text-3xl font-bold text-white mb-6">
+            Photos
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {movie.images.filter(Boolean).map((imgPath: string, index: number) => (
+              <div key={index} className="rounded-lg overflow-hidden">
+                <img
+                  src={`http://127.0.0.1:8000/${imgPath}`}
+                  alt={`${movie.title} - Photo ${index + 1}`}
+                  className="w-full h-full object-cover aspect-video"
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       {/* Cast Section */}
       <section className="container mx-auto px-4 py-12">
         <h2 className="font-heading text-2xl md:text-3xl font-bold text-white mb-6">
@@ -195,7 +212,7 @@ const MovieDetail = () => {
             <div key={actor.actor_id} className="text-center">
               <div className="aspect-square rounded-full overflow-hidden mb-3 mx-auto">
                 <img
-                  src={`https://biydaaltbackends.vercel.app/${actor.image}`}
+                  src={`http://127.0.0.1:8000/${actor.image}`}
                   alt={`${actor.fname} ${actor.lname}`}
                   className="w-full h-full object-cover"
                 />
@@ -210,24 +227,7 @@ const MovieDetail = () => {
       </section>
 
       {/* Photos Section */}
-      {movie.content?.length > 0 && (
-        <section className="container mx-auto px-4 py-12">
-          <h2 className="font-heading text-2xl md:text-3xl font-bold text-white mb-6">
-            Photos
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {movie.content.filter(Boolean).map((content: any) => (
-              <div key={content.id || content.img} className="rounded-lg overflow-hidden">
-                <img
-                  src={`/${content.img}`}
-                  alt={`${movie.title} - Photo`}
-                  className="w-full h-full object-cover aspect-video"
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+     
     </Layout>
   );
 };

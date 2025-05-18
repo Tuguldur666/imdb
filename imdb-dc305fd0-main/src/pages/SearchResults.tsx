@@ -95,7 +95,11 @@ const SearchResults = () => {
                   key={movie.movie_id}
                   movie_id={movie.movie_id}
                   title={movie.title}
-                  poster={movie.poster}
+                    poster={
+                    movie.poster?.startsWith("http")
+                      ? movie.poster
+                      : `http://127.0.0.1:8000/${movie.poster}`
+                  }
                   rate={movie.rate || 0}
                   age_rate={movie.age_rate || "N/A"}
                   release_date={movie.release_date || ""}

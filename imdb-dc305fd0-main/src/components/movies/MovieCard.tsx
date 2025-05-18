@@ -72,7 +72,8 @@ const MovieCard = ({
         {!hideWishlistToggle && onToggleWishlist && (
           <button
             onClick={toggleWishlist}
-            className="absolute bottom-3 right-3 z-10 bg-white/80 hover:bg-white text-red-500 rounded-full p-1 transition-colors"
+           className="absolute bottom-3 left-3 z-10 bg-white/80 hover:bg-white text-red-500 rounded-full p-1 transition-colors"
+
           >
             <Heart
               className="w-5 h-5"

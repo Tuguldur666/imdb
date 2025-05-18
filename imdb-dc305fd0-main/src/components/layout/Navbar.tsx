@@ -47,7 +47,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <span className="font-heading font-bold text-2xl bg-gradient-to-r from-pink to-lightpurple bg-clip-text text-transparent">
-              MovieMuse
+              IMDB
             </span>
           </Link>
 

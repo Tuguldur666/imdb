@@ -9,12 +9,9 @@ const Footer = () => {
           <div className="mb-4 md:mb-0">
             <Link to="/" className="flex items-center space-x-2">
               <span className="font-heading font-bold text-xl bg-gradient-to-r from-pink to-lightpurple bg-clip-text text-transparent">
-                MovieMuse
+                IMDB
               </span>
             </Link>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Your ultimate movie database experience
-            </p>
           </div>
           
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-12">
@@ -58,7 +55,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-8 pt-4 border-t border-gray-800 text-center text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} MovieMuse. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} IMDB. All rights reserved.</p>
         </div>
       </div>
     </footer>
