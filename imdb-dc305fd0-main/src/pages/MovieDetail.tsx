@@ -143,7 +143,7 @@ const MovieDetail = () => {
                 <div className="flex items-center">
                   <Theater  className="w-4 h-4 text-muted-foreground mr-1" />
                   <span className="text-muted-foreground">
-                    Genre: {movie.Categories}
+                    Genre: {movie.categories}
                   </span>
                 </div>
               </div>
