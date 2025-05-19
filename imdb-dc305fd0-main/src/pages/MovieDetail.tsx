@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { getMovieDetail } from "@/api/api";
-import { Star, Clock, Film, Calendar } from "lucide-react";
+import { Star, Clock, Film, Calendar,Theater  } from "lucide-react";
 
 const MovieDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -138,6 +138,12 @@ const MovieDetail = () => {
                   <Film className="w-4 h-4 text-muted-foreground mr-1" />
                   <span className="text-muted-foreground">
                     Metascore: {movie.metascore}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <Theater  className="w-4 h-4 text-muted-foreground mr-1" />
+                  <span className="text-muted-foreground">
+                    Genre: {movie.Categories}
                   </span>
                 </div>
               </div>
